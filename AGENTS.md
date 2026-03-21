@@ -52,6 +52,13 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - `trash` > `rm` (recoverable beats gone forever)
 - When in doubt, ask.
 
+## Remote Coding Policy
+
+- If the human asks for code generation, file creation, refactoring, or debugging to be done by the host Claude Code, route it through `tmux-agents-relay` and use `relay.sh deliver`.
+- Do not satisfy that request by writing the artifact locally with `exec`, `ssh`, or direct shell commands.
+- If the relay path fails, report the failure instead of substituting a local implementation.
+- Only use local execution for host-code tasks if the human explicitly asks for a local fallback.
+
 ## External vs Internal
 
 **Safe to do freely:**
