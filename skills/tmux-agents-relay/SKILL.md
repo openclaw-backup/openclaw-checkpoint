@@ -43,8 +43,9 @@ Core flow:
 
 - If the user asks OpenClaw to build, modify, debug, or generate code on the host Mac, do not satisfy the request locally.
 - Delegate the work to the host relay with `deliver` and then summarize the host Claude Code output.
-- Only fall back to a local answer if the host relay is unavailable or the host task fails after the relay attempt.
-- Do not invent a delivered artifact when the relay path was intended; report the relay failure instead.
+- If the host relay is unavailable or the host task fails, report the failure instead of generating a substitute local implementation.
+- Do not invent a delivered artifact when the relay path was intended.
+- Do not produce a final code artifact locally for a task that was explicitly delegated to the host relay.
 
 ## Operating rules
 

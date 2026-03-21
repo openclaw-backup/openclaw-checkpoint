@@ -178,8 +178,20 @@ print(shlex.quote(sys.argv[1]))
 PY
 )
 
+task_script=$(mktemp /tmp/openclaw-relay-task.XXXXXX.sh)
+cat > "$task_script" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+cd $workdir_q
+$HOST_CLAUDE_BIN -p $prompt_q 2>&1 | tee -a $log_q
+status=\$?
+printf '%s\n' $marker_q
+exit \$status
+EOF
+chmod +x "$task_script"
+
 "$HOST_TMUX_BIN" new-window -t "$HOST_SESSION" -n "$WINDOW" -c "$HOST_WORKDIR"
-"$HOST_TMUX_BIN" send-keys -t "$HOST_SESSION:$WINDOW" "cd $workdir_q && $HOST_CLAUDE_BIN -p $prompt_q 2>&1 | tee -a $log_q; status=\$?; printf '%s\n' $marker_q; exit \$status" Enter
+"$HOST_TMUX_BIN" send-keys -t "$HOST_SESSION:$WINDOW" "bash $task_script" Enter
 "$HOST_TMUX_BIN" select-window -t "$HOST_SESSION:$WINDOW"
 echo "$WINDOW"
 REMOTE
