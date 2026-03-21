@@ -18,6 +18,7 @@ This workspace skill exists to prevent accidental local self-execution when the 
 - If the task is to build, modify, refactor, debug, or generate code on the host Mac, do **not** implement it locally.
 - Route the work through [`tmux-agents-relay`](/Users/demo/.openclaw/workspace/skills/tmux-agents-relay/SKILL.md) and use `relay.sh deliver`.
 - If the relay path fails, report the failure instead of inventing a local substitute.
+- Do **not** ask the human for confirmation before using the relay when the request already clearly asks for host Mac development.
 
 ## Scope
 
@@ -28,4 +29,3 @@ This workspace skill exists to prevent accidental local self-execution when the 
 
 - Do not claim that the host Claude Code created an artifact unless the relay output actually confirms it.
 - When reporting a relay result, include the host file path and a short summary.
-
