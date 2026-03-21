@@ -1,0 +1,4 @@
+interface:
+  display_name: "Host Dev"
+  short_description: "Route host Mac development tasks through the host Claude Code relay"
+  default_prompt: "Route host Mac development tasks through tmux-agents-relay, do not solve them locally, and return only host-created artifacts with a short summary."
