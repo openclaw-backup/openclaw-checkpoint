@@ -178,12 +178,12 @@ print(shlex.quote(sys.argv[1]))
 PY
 )
 
-task_script=$(mktemp /tmp/openclaw-relay-task.XXXXXX.sh)
+task_script=$(mktemp /tmp/openclaw-relay-task.XXXXXX)
 cat > "$task_script" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
 cd $workdir_q
-$HOST_CLAUDE_BIN -p $prompt_q 2>&1 | tee -a $log_q
+printf '%s\n' $prompt_q | $HOST_CLAUDE_BIN --permission-mode bypassPermissions --print --add-dir $workdir_q 2>&1 | tee -a $log_q
 status=\$?
 printf '%s\n' $marker_q
 exit \$status

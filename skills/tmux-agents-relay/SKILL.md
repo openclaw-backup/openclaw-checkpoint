@@ -50,7 +50,7 @@ Core flow:
 ## Operating rules
 
 - Keep the first version narrow: one host task at a time.
-- Use `claude -p` on the host for one-shot tasks.
+- Use `claude --permission-mode bypassPermissions --print --add-dir /Users/yurika/dev` on the host for one-shot tasks, feeding the prompt on stdin, so relay tasks do not stall on interactive approval prompts.
 - Put live output in the tmux worker window and a log file.
 - Summarize failures only; do not forward secrets to the host unless the task explicitly requires an approved secret.
 - If `tmux` or `claude` is missing on the host, stop and report the missing prerequisite instead of pretending the relay is ready.

@@ -1,17 +1,24 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 
 const SERVICE_MAP = {
   gatewayToken: {
     account: 'openclaw-gateway',
     service: 'openclaw-gateway-token',
+    env: 'OPENCLAW_GATEWAY_TOKEN',
   },
   discordBotToken: {
     account: 'openclaw-discord',
     service: 'openclaw-discord-bot-token',
+    env: 'OPENCLAW_DISCORD_BOT_TOKEN',
   },
 };
+
+const LOGIN_KEYCHAIN = '/Users/demo/Library/Keychains/login.keychain-db';
+const RUNTIME_SECRET_DIR = join(homedir(), '.openclaw', 'runtime-secrets');
 
 function readStdin() {
   return readFileSync(0, 'utf8');
@@ -26,9 +33,15 @@ function loadRequest() {
 function readKeychainSecret({ account, service }) {
   return execFileSync(
     'security',
-    ['find-generic-password', '-a', account, '-s', service, '-w'],
+    ['find-generic-password', '-a', account, '-s', service, '-w', LOGIN_KEYCHAIN],
     { encoding: 'utf8' },
   ).trim();
+}
+
+function readRuntimeSecret(fileName) {
+  const filePath = join(RUNTIME_SECRET_DIR, fileName);
+  if (!existsSync(filePath)) return null;
+  return readFileSync(filePath, 'utf8').trim();
 }
 
 function main() {
@@ -45,9 +58,20 @@ function main() {
     }
 
     try {
+      const runtimeSecret = readRuntimeSecret(`${id}.txt`);
+      if (runtimeSecret) {
+        values[id] = runtimeSecret;
+        continue;
+      }
+
       values[id] = readKeychainSecret(mapping);
     } catch (error) {
-      errors[id] = { message: error instanceof Error ? error.message : String(error) };
+      const fallback = process.env[mapping.env];
+      if (fallback) {
+        values[id] = fallback;
+      } else {
+        errors[id] = { message: error instanceof Error ? error.message : String(error) };
+      }
     }
   }
 
