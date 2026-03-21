@@ -35,8 +35,16 @@ Prefer `{baseDir}/scripts/relay.sh` for all relay operations.
 Core flow:
 1. Run `status` to verify SSH reachability and host prerequisites.
 2. Run `ensure` to create or reuse the host tmux session.
-3. Run `task <prompt>` to send one Claude Code task to the host.
-4. Run `capture [target]` to read the latest host output.
+3. Run `deliver <prompt>` for the common case: send one Claude Code task to the host and wait for the result.
+4. Run `task <prompt>` only when you intentionally want to queue work asynchronously.
+5. Run `capture [target]` to read the latest host output.
+
+## Delegation rule
+
+- If the user asks OpenClaw to build, modify, debug, or generate code on the host Mac, do not satisfy the request locally.
+- Delegate the work to the host relay with `deliver` and then summarize the host Claude Code output.
+- Only fall back to a local answer if the host relay is unavailable or the host task fails after the relay attempt.
+- Do not invent a delivered artifact when the relay path was intended; report the relay failure instead.
 
 ## Operating rules
 

@@ -37,3 +37,5 @@
 - SSH key for relay: `~/.ssh/openclaw-tmux-agents`
 - Host relay skill: `tmux-agents-relay`
 - Current blocker on host: `tmux` and `claude` were missing before bootstrap
+- Preferred relay flow: use `relay.sh deliver <prompt>` for development tasks that should run on host Claude Code
+- Delegation rule: do not satisfy host-code requests locally when the relay path is available; capture and summarize the host result instead

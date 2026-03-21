@@ -13,12 +13,13 @@ HOST_CLAUDE_BIN="${OPENCLAW_HOST_RELAY_CLAUDE_BIN:-/Users/yurika/.local/bin/clau
 
 usage() {
   cat <<'EOF'
-Usage: relay.sh <status|ensure|task|capture|attach|stop> [args...]
+Usage: relay.sh <status|ensure|task|deliver|capture|attach|stop> [args...]
 
 Commands:
   status                 Check host SSH, tmux, claude, and relay session status
   ensure                 Create or reuse the host tmux relay session
   task <prompt>           Send one Claude Code task to the host relay session
+  deliver <prompt>        Ensure relay, send a task, and wait for captured output
   capture [target]        Capture output from the host worker window or session
   attach                  SSH to the host and attach to the relay session
   stop                    Kill the host relay session
@@ -123,11 +124,13 @@ cmd_task() {
   fi
 
   local prompt="$*"
-  local prompt_quoted window_name
+  local prompt_quoted window_name marker marker_quoted
   prompt_quoted="$(quote_shell "$prompt")"
   window_name="task-$(date +%Y%m%d-%H%M%S)"
+  marker="__OPENCLAW_RELAY_DONE__:${window_name}"
+  marker_quoted="$(quote_shell "$marker")"
 
-  ssh_host "PROMPT=$prompt_quoted WINDOW=$(quote_shell "$window_name") $(remote_env_prefix) bash -se" <<'REMOTE'
+  ssh_host "PROMPT=$prompt_quoted WINDOW=$(quote_shell "$window_name") MARKER=$marker_quoted $(remote_env_prefix) bash -se" <<'REMOTE'
 set -euo pipefail
 
 : "${HOST_SESSION:?}"
@@ -136,6 +139,7 @@ set -euo pipefail
 : "${HOST_MONITOR_LOG:?}"
 : "${PROMPT:?}"
 : "${WINDOW:?}"
+: "${MARKER:?}"
 : "${HOST_TMUX_BIN:?}"
 : "${HOST_CLAUDE_BIN:?}"
 
@@ -167,11 +171,55 @@ import sys
 print(shlex.quote(sys.argv[1]))
 PY
 )
+marker_q=$(python3 - "$MARKER" <<'PY'
+import shlex
+import sys
+print(shlex.quote(sys.argv[1]))
+PY
+)
 
 "$HOST_TMUX_BIN" new-window -t "$HOST_SESSION" -n "$WINDOW" -c "$HOST_WORKDIR"
-"$HOST_TMUX_BIN" send-keys -t "$HOST_SESSION:$WINDOW" "cd $workdir_q && $HOST_CLAUDE_BIN -p $prompt_q 2>&1 | tee -a $log_q" Enter
+"$HOST_TMUX_BIN" send-keys -t "$HOST_SESSION:$WINDOW" "cd $workdir_q && $HOST_CLAUDE_BIN -p $prompt_q 2>&1 | tee -a $log_q; status=\$?; printf '%s\n' $marker_q; exit \$status" Enter
 "$HOST_TMUX_BIN" select-window -t "$HOST_SESSION:$WINDOW"
 echo "$WINDOW"
+REMOTE
+}
+
+cmd_deliver() {
+  if [ "$#" -lt 1 ]; then
+    echo "deliver requires a prompt" >&2
+    exit 2
+  fi
+
+  cmd_ensure
+  local window_name
+  window_name="$(cmd_task "$@")"
+
+  ssh_host "WINDOW=$(quote_shell "$window_name") $(remote_env_prefix) bash -se" <<'REMOTE'
+set -euo pipefail
+
+: "${HOST_SESSION:?}"
+: "${WINDOW:?}"
+: "${HOST_TMUX_BIN:?}"
+
+marker="__OPENCLAW_RELAY_DONE__:${WINDOW}"
+target="$HOST_SESSION:$WINDOW"
+
+for _ in $(seq 1 180); do
+  if "$HOST_TMUX_BIN" has-session -t "$HOST_SESSION" 2>/dev/null; then
+    if output=$("$HOST_TMUX_BIN" capture-pane -pt "$target" -S -200 2>/dev/null); then
+      if printf '%s\n' "$output" | grep -Fq "$marker"; then
+        printf '%s\n' "$output" | grep -Fvx "$marker"
+        exit 0
+      fi
+    fi
+  fi
+  sleep 1
+done
+
+echo "timeout waiting for relay completion: $target" >&2
+"$HOST_TMUX_BIN" capture-pane -pt "$target" -S -200
+exit 3
 REMOTE
 }
 
@@ -226,6 +274,7 @@ main() {
     status) cmd_status "$@" ;;
     ensure) cmd_ensure "$@" ;;
     task) cmd_task "$@" ;;
+    deliver) cmd_deliver "$@" ;;
     capture) cmd_capture "$@" ;;
     attach) cmd_attach "$@" ;;
     stop) cmd_stop "$@" ;;
