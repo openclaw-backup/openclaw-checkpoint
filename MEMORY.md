@@ -28,3 +28,12 @@
 - Repository: `openclaw-backup/openclaw-checkpoint`
 - Auth: SSH key
 - Checkpoints are created with the `openclaw-checkpoint` workflow
+
+## Host Mac Relay
+
+- Host alias: `AbenoiMac`
+- Host user: `yurika`
+- Host workdir: `/Users/yurika/dev`
+- SSH key for relay: `~/.ssh/openclaw-tmux-agents`
+- Host relay skill: `tmux-agents-relay`
+- Current blocker on host: `tmux` and `claude` were missing before bootstrap
