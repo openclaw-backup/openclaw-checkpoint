@@ -1,0 +1,10 @@
+{
+  "id": "host-dev-router",
+  "name": "Host Dev Router",
+  "description": "Route host Mac development requests to the host Claude Code through a delegated tool.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

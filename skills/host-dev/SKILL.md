@@ -32,7 +32,7 @@ Use `scripts/host-dev.sh` as the normal relay wrapper.
 1. Confirm relay readiness with `host-dev.sh status`.
 2. Send one narrow task with `host-dev.sh deliver "<task>"`.
 3. Do not ask the human for extra confirmation unless the task is genuinely underspecified.
-4. Require the host result to include the changed path(s) and a short summary.
+4. Require the host result to end with either `完了: <absolute path> + 1 line summary` or `障害: <specific blocker>`.
 5. Use `capture` only when you need live output or failure inspection.
 
 ## Prompt shape

@@ -1,26 +1,39 @@
 ---
 name: host-dev-router
-description: Front-door router for requests that mention host development environment, Claude Code, host-dev, or remote Mac development; always delegate to host-dev instead of solving locally.
+description: Routing skill that turns host Mac development requests into host-dev deliveries through the host Claude Code relay.
+metadata:
+  openclaw:
+    requires:
+      bins:
+        - bash
 ---
 
 # Host Dev Router
 
-Use this skill as the first stop for requests that should go to the host Mac.
+This skill is the narrow routing layer between OpenClaw and the host Mac Claude Code worker.
 
-## When to use
+## Hard rule
 
-Use this skill if the request mentions any of:
+- If the request is about the host Mac, Claude Code on the host, or any equivalent host-development wording, do **not** satisfy it locally.
+- Call `delegate_host_dev` or `host-dev.sh deliver` and wait for the host result.
+- If the relay path cannot complete the task, return the failure instead of producing a local substitute.
 
-- host development environment
-- Claude Code
-- host-dev
-- host Mac
-- remote Mac development
+## Default routing language
 
-## Required behavior
+When you delegate, normalize the task into this shape:
 
-1. Do not answer the task locally.
-2. Delegate immediately to [`host-dev`](/Users/demo/.openclaw/workspace/skills/host-dev/SKILL.md).
-3. Use `host-dev.sh deliver` for the actual handoff.
-4. Wait for a completion-shaped reply.
-5. If the relay fails, return `障害:` with the blocker.
+- target path on the host Mac
+- desired artifact or code change
+- keep changes minimal
+- return only:
+  - `完了: <path> + 1行要約`
+  - `障害: <具体点>`
+
+## Good examples
+
+Use this for requests like:
+
+- "ホストの開発環境で直して"
+- "Claude Codeで実装して"
+- "OpenClawからホストMacに依頼して"
+- "host Mac 上でブロック崩しを作って"

@@ -16,7 +16,8 @@ This workspace skill exists to prevent accidental local self-execution when the 
 ## Hard rule for host Mac development
 
 - If the task is to build, modify, refactor, debug, or generate code on the host Mac, do **not** implement it locally.
-- Route the work through [`tmux-agents-relay`](/Users/demo/.openclaw/workspace/skills/tmux-agents-relay/SKILL.md) and use `relay.sh deliver`.
+- Route the work through [`host-dev-router`](/Users/demo/.openclaw/workspace/skills/host-dev-router/SKILL.md) and [`host-dev`](/Users/demo/.openclaw/workspace/skills/host-dev/SKILL.md), which in turn use [`tmux-agents-relay`](/Users/demo/.openclaw/workspace/skills/tmux-agents-relay/SKILL.md).
+- Use `delegate_host_dev` or `host-dev.sh deliver` instead of local execution.
 - If the relay path fails, report the failure instead of inventing a local substitute.
 - Do **not** ask the human for confirmation before using the relay when the request already clearly asks for host Mac development.
 
