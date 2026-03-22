@@ -21,7 +21,7 @@ This skill complements generic `tmux-agents` workflows by adding the host relay 
 
 ## Default relay target
 
-- Host alias: `AbenoiMac`
+- Host alias: `openclaw-relay-host`
 - Host user: `yurika`
 - Host repo/workdir: `/Users/yurika/dev`
 - Host tmux session: `openclaw-relay`

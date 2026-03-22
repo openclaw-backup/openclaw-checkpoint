@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-HOST_ALIAS="${OPENCLAW_HOST_RELAY_HOST:-AbenoiMac}"
+HOST_ALIAS="${OPENCLAW_HOST_RELAY_HOST:-openclaw-relay-host}"
 HOST_USER="${OPENCLAW_HOST_RELAY_USER:-yurika}"
 HOST_WORKDIR="${OPENCLAW_HOST_RELAY_WORKDIR:-/Users/yurika/dev}"
 HOST_SESSION="${OPENCLAW_HOST_RELAY_SESSION:-openclaw-relay}"
@@ -36,7 +36,8 @@ PY
 }
 
 ssh_host() {
-  ssh -i "$SSH_KEY" \
+  env -i HOME="${HOME:-/Users/demo}" USER="$HOST_USER" PATH="/usr/bin:/bin:/usr/sbin:/sbin" \
+    /usr/bin/ssh -i "$SSH_KEY" \
     -o BatchMode=yes \
     -o StrictHostKeyChecking=accept-new \
     "${HOST_USER}@${HOST_ALIAS}" "$@"
@@ -185,7 +186,10 @@ set -u
 cd $workdir_q
 status=0
 {
-  printf '%s\n' $prompt_q | $HOST_CLAUDE_BIN --permission-mode bypassPermissions --print --add-dir $workdir_q 2>&1 | tee -a $log_q
+  env PATH=/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin \
+    printf '%s\n' $prompt_q | \
+    env PATH=/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin \
+    $HOST_CLAUDE_BIN --permission-mode bypassPermissions --print --add-dir $workdir_q 2>&1 | tee -a $log_q
 } || status=\$?
 printf '%s\n' $marker_q
 printf '%s\n' "__OPENCLAW_RELAY_STATUS__:\$status"
