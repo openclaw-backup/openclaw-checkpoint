@@ -54,8 +54,8 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 
 ## Remote Coding Policy
 
-- If the human asks for code generation, file creation, refactoring, or debugging to be done by the host Claude Code, route it through `tmux-agents-relay` and use `relay.sh deliver`.
-- Prefer the dedicated `host-dev` skill and its `host-dev.sh deliver` wrapper for host Mac development tasks.
+- If the human asks for code generation, file creation, refactoring, debugging, or "host development environment" / "Claude Code" / "host-dev" work, route it through `host-dev` immediately.
+- Use the dedicated `host-dev` skill first, then its `host-dev.sh deliver` wrapper, and only then `tmux-agents-relay`.
 - Do not satisfy that request by writing the artifact locally with `exec`, `ssh`, or direct shell commands.
 - If the relay path fails, report the failure instead of substituting a local implementation.
 - Only use local execution for host-code tasks if the human explicitly asks for a local fallback.

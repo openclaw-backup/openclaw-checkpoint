@@ -1,0 +1,4 @@
+interface:
+  display_name: "Host Dev Router"
+  short_description: "Immediate router for host Mac development requests"
+  default_prompt: "If the request mentions host development environment, Claude Code, host-dev, or remote Mac development, delegate immediately to [$host-dev](/Users/demo/.openclaw/workspace/skills/host-dev/SKILL.md) and return only a completion or blocker."

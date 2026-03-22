@@ -1,11 +1,21 @@
 ---
 name: host-dev
-description: Route host Mac development tasks to the host Claude Code over tmux-agents-relay instead of solving them locally.
+description: Route host Mac development tasks, especially when the user says host development environment, Claude Code, host-dev, or remote Mac development, to the host Claude Code over tmux-agents-relay instead of solving them locally.
 ---
 
 # Host Dev
 
 Use this skill when the task should be executed on the host Mac by Claude Code.
+
+## Trigger phrases
+
+- "host development environment"
+- "Claude Code"
+- "host-dev"
+- "host Mac"
+- "remote Mac development"
+
+When any of those phrases appear in the request, do not keep the task local. Route immediately to the host relay.
 
 ## Hard rule
 
@@ -21,8 +31,9 @@ Use `scripts/host-dev.sh` as the normal relay wrapper.
 
 1. Confirm relay readiness with `host-dev.sh status`.
 2. Send one narrow task with `host-dev.sh deliver "<task>"`.
-3. Require the host result to include the changed path(s) and a short summary.
-4. Use `capture` only when you need live output or failure inspection.
+3. Do not ask the human for extra confirmation unless the task is genuinely underspecified.
+4. Require the host result to include the changed path(s) and a short summary.
+5. Use `capture` only when you need live output or failure inspection.
 
 ## Prompt shape
 
@@ -44,3 +55,11 @@ Report only the final file path and a short summary.
 
 - Use this skill for host Mac build, modify, refactor, debug, and generate tasks.
 - Use local tools only for reading relay output or preparing the relay prompt.
+
+## Completion contract
+
+- Treat progress-only replies as failures.
+- Return only one of:
+  - `完了: <absolute path> + 1 line summary`
+  - `障害: <specific blocker>`
+- If the relay output is missing a completion shape, keep waiting for the relay marker and do not synthesize a local answer.

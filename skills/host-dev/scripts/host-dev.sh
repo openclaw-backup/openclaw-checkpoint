@@ -34,7 +34,7 @@ case "$cmd" in
     fi
 
     prompt="$*"
-    strict_prefix=$'HOST-DEV TASK (host Mac Claude Code only)\n- Do not solve locally.\n- Do not hand the task back to OpenClaw.\n- If the host relay cannot complete the task, report the failure explicitly.\n\n'
+    strict_prefix=$'HOST-DEV TASK (host Mac Claude Code only)\n- Do not solve locally.\n- Do not hand the task back to OpenClaw.\n- Do not provide progress-only updates.\n- If the host relay cannot complete the task, report the failure explicitly.\n- Final reply format must be exactly one of:\n  - 完了: <absolute path> + 1 line summary\n  - 障害: <specific blocker>\n\n'
     exec "$RELAY_SH" deliver "${strict_prefix}${prompt}"
     ;;
   -h|--help|help|"")
