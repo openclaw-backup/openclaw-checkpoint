@@ -181,11 +181,14 @@ PY
 task_script=$(mktemp /tmp/openclaw-relay-task.XXXXXX)
 cat > "$task_script" <<EOF
 #!/usr/bin/env bash
-set -euo pipefail
+set -u
 cd $workdir_q
-printf '%s\n' $prompt_q | $HOST_CLAUDE_BIN --permission-mode bypassPermissions --print --add-dir $workdir_q 2>&1 | tee -a $log_q
-status=\$?
+status=0
+{
+  printf '%s\n' $prompt_q | $HOST_CLAUDE_BIN --permission-mode bypassPermissions --print --add-dir $workdir_q 2>&1 | tee -a $log_q
+} || status=\$?
 printf '%s\n' $marker_q
+printf '%s\n' "__OPENCLAW_RELAY_STATUS__:\$status"
 exit \$status
 EOF
 chmod +x "$task_script"
@@ -221,7 +224,12 @@ for _ in $(seq 1 180); do
   if "$HOST_TMUX_BIN" has-session -t "$HOST_SESSION" 2>/dev/null; then
     if output=$("$HOST_TMUX_BIN" capture-pane -pt "$target" -S -200 2>/dev/null); then
       if printf '%s\n' "$output" | grep -Fq "$marker"; then
-        printf '%s\n' "$output" | grep -Fvx "$marker"
+        relay_status=$(printf '%s\n' "$output" | sed -n 's/^__OPENCLAW_RELAY_STATUS__://p' | tail -n 1)
+        printf '%s\n' "$output" | grep -Fvx "$marker" | grep -Ev '^__OPENCLAW_RELAY_STATUS__:[0-9]+$'
+        if [ -n "${relay_status:-}" ] && [ "$relay_status" != "0" ]; then
+          echo "relay task exited with status $relay_status" >&2
+          exit "$relay_status"
+        fi
         exit 0
       fi
     fi
